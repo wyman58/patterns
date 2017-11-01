@@ -1,0 +1,107 @@
+
+repositories {
+    maven { url 'http://prod-vm-fv-ag-snx-x1.budgetdirect.com.au:8081/nexus/content/groups/public' }
+    maven { url 'http://prod-vm-fv-ag-snx-x1.budgetdirect.com.au:8081/nexus/content/repositories/thirdparty' }
+    maven { url 'http://prod-vm-fv-ag-snx-x1.budgetdirect.com.au:8081/nexus/content/repositories/releases' }
+    //mavenCentral()
+}
+
+apply plugin: 'java-library'
+apply plugin: 'idea'
+apply plugin: 'jacoco'
+apply plugin: 'pmd'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+group = 'wyman'
+version = '1.5'
+
+// Suppress sillies - http://pmd.sourceforge.net/pmd-4.3/suppressing.html
+pmd {
+    ignoreFailures = false
+    sourceSets = [sourceSets.main]
+    reportsDir = file("$project.buildDir/reports/pmd")
+    ruleSets = [
+            "java-basic",
+            "java-braces",
+            "java-clone",
+            "java-codesize",
+            "java-design",
+            "java-finalizers",
+            "java-imports",
+            "java-j2ee",
+            "java-junit",
+            "java-logging-jakarta-commons",
+            "java-logging-java",
+            "java-migrating",
+            "java-optimizations",
+            "java-strings",
+            "java-sunsecure",
+            "java-typeresolution",
+            "java-unusedcode"
+    ]
+}
+
+jacocoTestReport {
+    group = "Reporting"
+    reports {
+        xml.enabled = true
+        html.destination = "${buildDir}/reports/coverage"
+    }
+}
+
+jacocoTestCoverageVerification {
+    // Before reducing these minimums:
+    //     run "gradle jacocoTestReport"
+    //     browse build/reports/coverage/index.html
+    //     find out what's not tested and why
+    violationRules {
+        rule {
+            element = 'PACKAGE'
+            limit {
+                counter = 'LINE'
+                minimum = 0.9
+            }
+        }
+        rule {
+            element = 'PACKAGE'
+            limit {
+                counter = 'BRANCH'
+                minimum = 0.9
+            }
+        }
+    }
+
+}
+jacocoTestCoverageVerification.dependsOn(jacocoTestReport)
+check.dependsOn jacocoTestCoverageVerification
+
+dependencies {
+    compile("org.apache.commons:commons-lang3:3.5")
+    compile("ch.qos.logback:logback-core:1.2.3")
+
+    compileOnly("org.projectlombok:lombok:1.16.16")
+    testCompileOnly("org.projectlombok:lombok:1.16.16")
+
+    //Caching
+    compile("com.github.ben-manes.caffeine:caffeine:2.5.5")
+
+    //Security
+    compile("org.keycloak:keycloak-authz-client:3.1.0.Final")
+
+    testCompile("com.github.mifmif:generex:1.0.2")
+
+    //Spring
+    compile("org.springframework.boot:spring-boot-starter-cache:1.5.6.RELEASE")
+    compile("org.springframework.boot:spring-boot-starter-web:1.5.6.RELEASE")
+    compile("org.springframework.boot:spring-boot-starter-actuator:1.5.6.RELEASE")
+    compile("org.springframework.ws:spring-ws-security:2.4.0.RELEASE")
+    testCompile("org.springframework:spring-test:4.3.10.RELEASE")
+
+    testCompile("org.unitils:unitils-core:3.4.2")
+    testCompile("org.hamcrest:hamcrest-core:1.3")
+    testCompile("org.hamcrest:hamcrest-library:1.3")
+    testCompile("org.mockito:mockito-all:1.10.19")
+    testCompile("junit:junit:4.12")
+}
+
